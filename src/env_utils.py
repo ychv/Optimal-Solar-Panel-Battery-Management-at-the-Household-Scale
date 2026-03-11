@@ -7,3 +7,6 @@ def update_conso(conso):
 
 def update_prod(prod):
     pass
+
+def update_price(price):
+    pass
