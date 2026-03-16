@@ -59,18 +59,18 @@ class HouseEnv(gym.Env):
         if action: # Discharge
             if to_provide > self._battery: # Need to buy electricity
                 self._battery = 0
-                reward = -1 * (to_provide - self._battery)* self._price/self.max_price
+                reward = -1 * (to_provide - self._battery)* self._price[0]/self.max_price
             else: # Can sell electricity
                 self._battery -= max(0,to_provide)
-                reward = 1 * max(0,-1*to_provide) * self._price/self.max_price
+                reward = 1 * max(0,-1*to_provide) * self._price[0]/self.max_price
 
         else: # Load
             if to_provide > 0: # Need to buy
-                reward = -1 * (to_provide - self._battery)* self._price/self.max_price
+                reward = -1 * (to_provide - self._battery)* self._price[0]/self.max_price
             else: # Can charge and sell excess
                 excess = -1*to_provide - (self.cap - self._battery)
                 self._battery += (self.cap - self._battery)
-                reward = 1 * max(0,excess) * self._price/self.max_price
+                reward = 1 * max(0,excess) * self._price[0]/self.max_price
 
         self._conso = update_conso(self._conso)
         self._prod = update_prod(self._prod)
