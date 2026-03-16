@@ -7,6 +7,7 @@ from gym import spaces
 import numpy as np
 from env_utils import *
 from typing import Optional
+from conso.generate_conso_day import ConsoDay
 
 class HouseEnv(gym.Env):
     
@@ -49,6 +50,7 @@ class HouseEnv(gym.Env):
         super().reset(seed=seed)
         self._battery = 0                           # Random ?
         self._conso = np.zeros((self.forecast-1,),dtype=int)  # TO CHANGE 
+        self.conso= ConsoDay() # TO CHANGE
         self._prod = np.zeros((self.forecast-1,),dtype=int)   # TO CHANGE
         self._price = np.zeros((self.forecast-1,),dtype=float)   # TO CHANGE
         self._time = 0
@@ -80,3 +82,14 @@ class HouseEnv(gym.Env):
             done = True
 
         return self._get_obs(), reward, done, {}
+    
+
+
+if __name__ == "__main__":
+    env = HouseEnv()
+    obs = env.reset()
+    print(obs)
+    for _ in range(10):
+        action = env.action_space.sample()
+        obs, reward, done, info = env.step(action)
+        print(obs, reward, done)
