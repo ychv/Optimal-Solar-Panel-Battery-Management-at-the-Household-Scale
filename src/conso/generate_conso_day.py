@@ -12,7 +12,7 @@ import os
 
 
 class ConsoDay:
-    def __init__(self, mean_day=None,sigma=200,dt=0.01,pas_t=15,battery_unit=20):
+    def __init__(self, mean_day=None,sigma=200,dt=0.01,pas_t=15,battery_unit=10):
         if mean_day is None:
             DIR= os.path.dirname(os.path.abspath(__file__))
             file = os.path.join(DIR, "consceaux.txt")
@@ -39,14 +39,14 @@ class ConsoDay:
 
     def translate_result(self):
         self.conso_translated = np.array([int(self.conso[i]/self.battery_unit) for i in range(0,len(self.conso),int(self.pas_t))])
-        return self.conso_translated
+        return self.conso_translated*self.pas_t/60
 
     def iteration_batterie(self):
         for i in range(self.pas_t):
             self.update_conso()
            
 
-        return int(self.conso[self.iteration-1]/self.battery_unit)
+        return int(self.conso[self.iteration-1]/self.battery_unit*self.pas_t/60) #attendtion on veut des equivalent Wh
     
 
 if __name__ == "__main__":
@@ -62,15 +62,14 @@ if __name__ == "__main__":
 
         for i in range(1440):
             conso_day.update_conso()
-       
-        
+               
 
 
     plt.plot(conso_day.translate_result())
     # print(len(conso_day.conso_translated))
     A=[conso_day.conso[0]/20]
     conso_day2 = ConsoDay(sigma=sigma,dt=dt)
-    for i in range(95):
+    for i in range(96):
         A.append(conso_day2.iteration_batterie())
 
     plt.plot(A)

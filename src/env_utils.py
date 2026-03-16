@@ -6,7 +6,7 @@ def update_conso(conso):
     conso.conso_day.update_conso()
 
 def update_prod(prod):
-    pass
+    prod.update_prod()
 
 def update_price(price):
-    pass
+    price.update_price()
