@@ -5,7 +5,7 @@ Environnement class definition
 import gym
 from gym import spaces
 import numpy as np
-from env_utils import *
+from src.env_utils import *
 from typing import Optional
 
 class HouseEnv(gym.Env):
@@ -55,6 +55,7 @@ class HouseEnv(gym.Env):
 
     def step(self,action):
         assert self.action_space.contains(action)
+        done = False
         to_provide = self._conso[0] - self._prod[0]
         if action: # Discharge
             if to_provide > self._battery: # Need to buy electricity
