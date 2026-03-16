@@ -10,11 +10,13 @@ from typing import Optional
 
 class HouseEnv(gym.Env):
     
-    def __init__(self,capacity=10,forecast=10,max_iter=100,min_price=0,max_price=100):
+    def __init__(self,capacity=10,forecast=10,Tmax=1000,min_price=0,max_price=100,max_prod=10,max_conso=10):
         self.cap = capacity
         self.forecast = forecast
-        self.max_iter = max_iter
         self.max_price = max_price
+        self.tmax = Tmax
+        self.max_prod = max_prod
+        self.max_conso = max_conso
 
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Dict(
@@ -22,10 +24,12 @@ class HouseEnv(gym.Env):
                 # "battery_%" : spaces.Box(0, capacity,shape=(1,),dtype=float),
                 # "house_conso" : spaces.Box(0, np.inf,shape=(forecast-1,),dtype=float),
                 # "solar_prod" : spaces.Box(0,np.inf,shape=(forecast-1,),dtype=float)
-                "battery_%" : spaces.Discrete(capacity),
-                "house_conso" : spaces.MultiDiscrete(capacity*np.ones((forecast-1,))),
-                "solar_prod" : spaces.MultiDiscrete(capacity*np.ones((forecast-1,))),
-                "price" : spaces.Box(min_price,max_price,(forecast-1,),dtype=float)
+
+                "battery_%" : spaces.Discrete(capacity),                                # Current battery available charge
+                "house_conso" : spaces.MultiDiscrete(max_conso*np.ones((forecast-1,))), # Current and foresable conso
+                "solar_prod" : spaces.MultiDiscrete(max_prod*np.ones((forecast-1,))),   # Current and foresable production
+                "price" : spaces.Box(min_price,max_price,(forecast-1,),dtype=float),    # Current and forseable price
+                "time" : spaces.Discrete(Tmax)                                          # Current time step
             }
         )
 
@@ -36,7 +40,8 @@ class HouseEnv(gym.Env):
             "battery_%" : self._battery,
             "house_conso" : self._conso,
             "solar_prod" : self._prod,
-            "price" : self._price
+            "price" : self._price,
+            "time" : self._time
         }
         return obs
 
@@ -46,7 +51,7 @@ class HouseEnv(gym.Env):
         self._conso = np.zeros((self.forecast-1,),dtype=int)  # TO CHANGE 
         self._prod = np.zeros((self.forecast-1,),dtype=int)   # TO CHANGE
         self._price = np.zeros((self.forecast-1,),dtype=float)   # TO CHANGE
-        self._iter = 0
+        self._time = 0
 
     def step(self,action):
         assert self.action_space.contains(action)
@@ -70,8 +75,8 @@ class HouseEnv(gym.Env):
         self._conso = update_conso(self._conso)
         self._prod = update_prod(self._prod)
         self._price = update_price(self._price)
-        self._iter += 1
-        if self._iter >= self.max_iter:
+        self._time += 1
+        if self._time >= self.tmax:
             done = True
 
         return self._get_obs(), reward, done, {}
