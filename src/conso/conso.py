@@ -67,6 +67,7 @@ df['weekday'] = df.index.weekday  # 0=lundi, 6=dimanche
 
 # Profil global — moyenne par minute de la journée
 mu_global = df.groupby('minute')['power_W'].mean()
+sigma_global = df.groupby('minute')['power_W'].std()
 
 
 
@@ -107,8 +108,12 @@ ax1 = fig.add_subplot(gs[0, :])
 ax1.plot(heures, mu_global.values / 1000,
          lw=1.5, alpha=0.7, label='μ(t) empirique (données brutes)')
 
-ax1.set_ylabel('Puissance (kW)')
+ax2 = ax1.twinx()
+ax2.plot(heures, sigma_global.values / 1000,
+            lw=1.5, alpha=0.7, color='orange', label='σ(t) empirique (écart-type)')
 
+ax1.set_ylabel('Puissance (kW)')
+ax2.set_ylabel('Écart-type (kW)')
 
 ax1.legend()
 plt.show()
@@ -130,3 +135,5 @@ with open(output_path, "w", encoding="utf-8") as f:
         f.write(f"{minute};{minute/60:.4f};{val:.2f}\n")
 
 print(f"Résultats sauvegardés dans : {output_path}")
+
+

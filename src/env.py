@@ -13,7 +13,6 @@ from conso.generate_prod import ProdDay
 class HouseEnv(gym.Env):
     
     def __init__(self,capacity=10,forecast=10,Tmax=1000,min_price=0,max_price=100,max_prod=10,max_conso=10):
-        
         self.cap = capacity
         self.forecast = forecast
         self.max_price = max_price
@@ -64,12 +63,11 @@ class HouseEnv(gym.Env):
     def reset(self,seed: Optional[int] = None):
         super().reset(seed=seed)
         self._battery = 0                           # Random ?
-        self._time = 0
         # self._conso = np.zeros((self.forecast-1,),dtype=int)  # TO CHANGE 
         self.conso= ConsoDay() #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
         self._prod = ProdDay() #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
         self._price = PrixDay() #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
-        
+        self._time = 0
 
     def step(self,action):
         assert self.action_space.contains(action)
