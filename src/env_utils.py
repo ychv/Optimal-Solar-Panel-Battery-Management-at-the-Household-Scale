@@ -3,10 +3,10 @@ Utility functions for environnement definition
 """
 
 def update_conso(conso):
-    conso.conso_day.update_conso()
+    conso.update_vision()
 
 def update_prod(prod):
-    prod.update_prod()
+    prod.update_vision()
 
 def update_price(price):
-    price.update_price()
+    price.update_vision()

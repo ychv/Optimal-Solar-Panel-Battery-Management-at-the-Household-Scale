@@ -53,9 +53,9 @@ class HouseEnv(gym.Env):
     def _get_obs(self):
         obs = {
             "battery_%" : self._battery,
-            "house_conso" : self._conso,
-            "solar_prod" : self._prod,
-            "price" : self._price,
+            "house_conso" : self._conso.vision,
+            "solar_prod" : self._prod.vision,
+            "price" : self._price.vision,
             "time" : self._time
         }
         return obs
@@ -64,33 +64,39 @@ class HouseEnv(gym.Env):
         super().reset(seed=seed)
         self._battery = 0                           # Random ?
         # self._conso = np.zeros((self.forecast-1,),dtype=int)  # TO CHANGE 
-        self.conso= ConsoDay() #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
+        self._conso= ConsoDay() #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
+        self._conso.initialisation(self.forecast)
         self._prod = ProdDay() #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
+        self._prod.initialisation(self.forecast)
         self._price = PrixDay() #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
+        self._price.initialisation(self.forecast)
         self._time = 0
+        return self._get_obs(), {}
 
     def step(self,action):
+
         assert self.action_space.contains(action)
-        to_provide = self._conso[0] - self._prod[0]
+        done = False
+        to_provide = self._conso.vision[0] - self._prod.vision[0]
         if action: # Discharge
             if to_provide > self._battery: # Need to buy electricity
                 self._battery = 0
-                reward = -1 * (to_provide - self._battery)* self._price[0]/self.max_price
+                reward = -1 * (to_provide - self._battery)* self._price.vision[0]/self.max_price
             else: # Can sell electricity
                 self._battery -= max(0,to_provide)
-                reward = 1 * max(0,-1*to_provide) * self._price[0]/self.max_price
+                reward = 1 * max(0,-1*to_provide) * self._price.vision[0]/self.max_price
 
         else: # Load
             if to_provide > 0: # Need to buy
-                reward = -1 * (to_provide - self._battery)* self._price[0]/self.max_price
+                reward = -1 * (to_provide - self._battery)* self._price.vision[0]/self.max_price
             else: # Can charge and sell excess
                 excess = -1*to_provide - (self.cap - self._battery)
                 self._battery += (self.cap - self._battery)
-                reward = 1 * max(0,excess) * self._price[0]/self.max_price
+                reward = 1 * max(0,excess) * self._price.vision[0]/self.max_price
 
-        self._conso = update_conso(self._conso)
-        self._prod = update_prod(self._prod)
-        self._price = update_price(self._price)
+        update_conso(self._conso)
+        update_prod(self._prod)
+        update_price(self._price)
         self._time += 1
         if self._time >= self.tmax:
             done = True
@@ -100,10 +106,14 @@ class HouseEnv(gym.Env):
 
 
 if __name__ == "__main__":
-    env = HouseEnv()
-    obs = env.reset()
+    env= HouseEnv()
+    obs, _ = env.reset()
     print(obs)
-    for _ in range(10):
-        action = env.action_space.sample()
-        obs, reward, done, info = env.step(action)
-        print(obs, reward, done)
+    action= 1
+    obs, reward, done, _ = env.step(action)
+    print(obs)
+    print(reward)
+    action= 0
+    obs, reward, done, _ = env.step(action)
+    print(obs)
+    print(reward)

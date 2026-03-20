@@ -27,7 +27,7 @@ class ConsoDay:
         self.battery_unit=battery_unit
     
     def drift_simple(self,i):
-        return 3*(self.mean_day[i] - self.conso[i])
+        return 3*(self.mean_day[i%len(self.mean_day)] - self.conso[i])
     def drift(self,i):
         mu_prime = (self.mean_day[i+1]-self.mean_day[i]) / self.dt
         return mu_prime - 3*(self.conso[i]-self.mean_day[i])
@@ -47,6 +47,19 @@ class ConsoDay:
            
 
         return int(self.conso[self.iteration-1]/self.battery_unit*self.pas_t/60) #attendtion on veut des equivalent Wh
+    
+    def initialisation(self,forecast):
+        self.vision=[0]*(forecast)
+        for i in range(forecast):
+            self.vision[i]=self.iteration_batterie()
+        return self.vision
+    
+
+    def update_vision(self):
+        "On supprime le premier terme et on ajoute le nouveau en queue de self.vision avec self.pop()"
+        self.vision.pop(0)
+        self.vision.append(self.iteration_batterie())
+        return self.vision
     
 
 if __name__ == "__main__":
@@ -69,13 +82,18 @@ if __name__ == "__main__":
     # print(len(conso_day.conso_translated))
     A=[conso_day.conso[0]/20]
     conso_day2 = ConsoDay(sigma=sigma,dt=dt)
-    for i in range(96):
+    for i in range(200):
         A.append(conso_day2.iteration_batterie())
 
     plt.plot(A)
 
     plt.legend(["Conso simulée","Conso moyenne"])
     plt.show()
+
+    conso_day3=ConsoDay(sigma=sigma,dt=dt)
+    conso_day3.initialisation(10)
+    for i in range(100):
+        print(conso_day3.update_vision())
 
 
 

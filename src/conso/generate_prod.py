@@ -25,10 +25,14 @@ class ProdDay:
                                    [0.1, 0.3, 0.6]])
         
     def markov_simple_update(self):
-        self.state = self.states[np.random.choice(len(self.states), p=self.mat_transition[self.day % len(self.states)])]
+        
+        # self.state = self.states[np.random.choice(len(self.states), p=self.mat_transition[self.day % len(self.states)])]
+        self.state = self.states[np.random.choice(len(self.states), p=self.mat_transition[self.state])]
         self.day += 1
         print(f"Day {self.day}: State {self.state}, Ensoleillement {self.ensoleillements[self.state]}")
     def iteration_batterie(self):
+        if self.time==0:
+            self.markov_simple_init()
         if self.time>=24*60-1:
             
             self.time=0
@@ -36,6 +40,20 @@ class ProdDay:
         result = int(self.prod_mu[self.time]*self.ensoleillements[self.state]/self.battery_unit *self.pas_t/60) #attendtion on veut des equivalent Wh
         self.time+=self.pas_t
         return result
+    def initialisation(self,forecast):
+        self.vision=[0]*(forecast)
+        for i in range(forecast):
+            self.vision[i]=self.iteration_batterie()
+        return self.vision
+    
+
+    def update_vision(self):
+        "On supprime le premier terme et on ajoute le nouveau en queue de self.vision avec self.pop()"
+        self.vision.pop(0)
+        self.vision.append(self.iteration_batterie())
+        return self.vision
+            
+
         
 
 
@@ -43,6 +61,13 @@ if __name__ == "__main__":
     prod_day = ProdDay()
     prod_day.markov_simple_init()
     prod_test= [prod_day.iteration_batterie() for t in range(0, 15*24*60, prod_day.pas_t)]
+
+
+    prod_day2=ProdDay()
+    prod_day2.initialisation(100)
+    prod_day2.update_vision()
+    print(prod_day2.vision)
+    print(len(prod_day2.vision))
   
     plt.plot(prod_test)
     plt.xlabel("Time (minutes)")
