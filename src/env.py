@@ -5,11 +5,11 @@ Environnement class definition
 import gym
 from gym import spaces
 import numpy as np
-from env_utils import *
+from src.env_utils import *
 from typing import Optional
-from conso.generate_conso_day import ConsoDay
-from conso.generate_prix import PrixDay
-from conso.generate_prod import ProdDay
+from src.conso.generate_conso_day import ConsoDay
+from src.conso.generate_prix import PrixDay
+from src.conso.generate_prod import ProdDay
 class HouseEnv(gym.Env):
     
     def __init__(self,capacity=10,forecast=10,Tmax=1000,min_price=0,max_price=100,max_prod=10,max_conso=10):
