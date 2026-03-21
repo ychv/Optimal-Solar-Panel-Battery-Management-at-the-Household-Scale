@@ -24,12 +24,13 @@ class ProdDay:
                                    [0.3, 0.4, 0.3],
                                    [0.1, 0.3, 0.6]])
         
-    def markov_simple_update(self):
+    def markov_simple_update(self,show=False):
         
         # self.state = self.states[np.random.choice(len(self.states), p=self.mat_transition[self.day % len(self.states)])]
         self.state = self.states[np.random.choice(len(self.states), p=self.mat_transition[self.state])]
         self.day += 1
-        print(f"Day {self.day}: State {self.state}, Ensoleillement {self.ensoleillements[self.state]}")
+        if show:
+            print(f"Day {self.day}: State {self.state}, Ensoleillement {self.ensoleillements[self.state]}")
     def iteration_batterie(self):
         if self.time==0:
             self.markov_simple_init()
