@@ -37,7 +37,7 @@ class HouseEnv(gym.Env):
 
         self.reset()
 
-        # Rajouté par le D (ça servira plus tard tkt le chauve)
+        # Rajouté par le D (ça servira plus tard tkt le chauve) - 'O' 
         @property  
         def time(self):
             return self._time
@@ -56,7 +56,7 @@ class HouseEnv(gym.Env):
             "house_conso" : self._conso.vision,
             "solar_prod" : self._prod.vision,
             "price" : self._price.vision,
-            "time" : self._time
+            "time" : self.time
         }
         return obs
 
@@ -70,35 +70,53 @@ class HouseEnv(gym.Env):
         self._prod.initialisation(self.forecast)
         self._price = PrixDay() #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
         self._price.initialisation(self.forecast)
-        self._time = 0
+        self.time = 0
         return self._get_obs(), {}
 
     def step(self,action):
+        """
+        Environnement reaction to an action of the agent
+        Reward is proportional to the quantity of electricity
+        to buy or sell 
+        
+        :param self: Description
+        :param action: Description
+        """
 
         assert self.action_space.contains(action)
         done = False
+
+        # Quantity of electricity to provide at current time
         to_provide = self._conso.vision[0] - self._prod.vision[0]
+
         if action: # Discharge
+
             if to_provide > self._battery: # Need to buy electricity
+                reward = - (to_provide - self._battery) * self._price.vision[0]/self.max_price
                 self._battery = 0
-                reward = -1 * (to_provide - self._battery)* self._price.vision[0]/self.max_price
+
             else: # Can sell electricity
                 self._battery -= max(0,to_provide)
-                reward = 1 * max(0,-1*to_provide) * self._price.vision[0]/self.max_price
+                reward = max(0,-1*to_provide) * self._price.vision[0]/self.max_price
 
         else: # Load
+
+            battery_gap = self.cap - self._battery
+            
             if to_provide > 0: # Need to buy
-                reward = -1 * (to_provide - self._battery)* self._price.vision[0]/self.max_price
-            else: # Can charge and sell excess
-                excess = -1*to_provide - (self.cap - self._battery)
-                self._battery += (self.cap - self._battery)
-                reward = 1 * max(0,excess) * self._price.vision[0]/self.max_price
+                reward = - (to_provide + battery_gap) * self._price.vision[0]/self.max_price
+                self._battery += battery_gap
+
+            else: # Can charge and sell excess : if excess < 0 then buy the remaining
+                excess = -to_provide - battery_gap
+                self._battery += battery_gap
+                reward = excess * self._price.vision[0]/self.max_price
 
         update_conso(self._conso)
         update_prod(self._prod)
         update_price(self._price)
-        self._time += 1
-        if self._time >= self.tmax:
+        self.time += 1
+        if self.time >= self.tmax:
             done = True
 
         return self._get_obs(), reward, done, {}
