@@ -1,19 +1,28 @@
+"""
+Simple test of a random policy
+"""
+from scripts.config import env_config
+
 from src.env import HouseEnv
 from tqdm import tqdm as tqdm
 import random
 import matplotlib.pyplot as plt
 
-num_episode = 100 ; Tmax = 1000
-seed = 42
+num_episodes = env_config['num_episodes'] ; Tmax = env_config['tmax']
+seed = env_config['seed']
 random.seed(seed)
-env = HouseEnv(max_price=1,Tmax=Tmax)
+env = HouseEnv(capacity=env_config["capacity"],
+               forecast=env_config["forecast"],
+               Tmax=Tmax,
+               min_price=env_config['min_price'],
+               max_price=env_config["max_price"])
 
 def random_policy():
-    return random.randint(0,1)
+    return random.randint(0,env.action_space.n - 1)
 
 rewards = []
 
-for i in tqdm(range(num_episode)):
+for i in tqdm(range(num_episodes)):
     reward_ep = 0
     state,_ = env.reset(seed=seed)
     action = random_policy()
