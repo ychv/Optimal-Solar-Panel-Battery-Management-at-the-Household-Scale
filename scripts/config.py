@@ -13,8 +13,10 @@ env_config = {
     'capacity' : 10,
     'forecast' : 10,
     'tmax' : 1000,
-    'min_price' : 0,
-    'max_price' : 1,
+    'min_price' : 0.1,
+    'max_price' : 0.2,
+    'max_prod' : 100,
+    'max_conso' : 55
 
 }
 

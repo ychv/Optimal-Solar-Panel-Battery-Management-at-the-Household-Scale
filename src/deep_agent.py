@@ -45,12 +45,10 @@ class DQN(nn.Module):
         return self.layer3(x)
     
 
-def select_action(state,EPS_START,EPS_END,EPS_DECAY,policy_net,env,device):
-    global steps_done
+def select_action(state,EPS_START,EPS_END,EPS_DECAY,policy_net,env,device,steps_done):
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * steps_done / EPS_DECAY)
-    steps_done += 1
     if sample > eps_threshold:
         with torch.no_grad():
             # t.max(1) will return the largest column value of each row.
@@ -107,19 +105,30 @@ def optimize_model(memory,BATCH_SIZE,device,policy_net,target_net,GAMMA,optimize
     torch.nn.utils.clip_grad_value_(policy_net.parameters(), 100)
     optimizer.step()
 
-def to_features(state):
+def to_features(state,env):
     """
     Transform a dict like state into a feature vector
     
     :param state: State representation as a dictionary
 
-    Return : Feature vector of the state (concatenation of values)
+    Return : Feature vector of the state (concatenation of
+    normalized values)
     """
-    values = state.values()
     vect = []
-    for value in values:
-        if type(value) == list:
-            vect = vect + value
+    for key,value in state.items():
+        if key == 'battery_%':
+            vect = vect + [value/env.cap]
+
+        elif key == 'house_conso':
+            vect = vect + [(1/env.max_conso) * x for x in value]
+
+        elif key == 'solar_prod':
+            vect = vect + [(1/env.max_prod) * x for x in value]
+
+        elif key == 'price':
+            vect = vect + [(1/env.max_price) * x for x in value]
+
         else:
-            vect = vect + [value]
+            vect = vect + [value/env.tmax]
+
     return vect

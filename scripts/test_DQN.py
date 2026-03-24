@@ -22,7 +22,9 @@ env = HouseEnv(capacity=env_config["capacity"],
                forecast=env_config["forecast"],
                Tmax=env_config['tmax'],
                min_price=env_config['min_price'],
-               max_price=env_config["max_price"])
+               max_price=env_config["max_price"],
+               max_prod=env_config['max_prod'],
+               max_conso=env_config['max_conso'])
 
 # if GPU is to be used
 device = torch.device(
@@ -68,7 +70,7 @@ LR = DL_config['LR']
 n_actions = env.action_space.n
 # Get the number of state observations
 state, info = env.reset()
-n_observations = len(to_features(state))
+n_observations = len(to_features(state,env))
 
 policy_net = DQN(n_observations, n_actions).to(device)
 target_net = DQN(n_observations, n_actions).to(device)
@@ -77,7 +79,7 @@ target_net.load_state_dict(policy_net.state_dict())
 optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
 memory = ReplayMemory(DL_config['memory'])
 
-
+global steps_done
 steps_done = 0
 
 episode_durations = []
@@ -87,15 +89,18 @@ if torch.cuda.is_available() or torch.backends.mps.is_available():
 else:
     num_episodes = int(env_config['num_episodes']/12)
 
-rewards = []
+rewards = [] ; actions_tot = []
 
 for i_episode in tqdm(range(num_episodes)):
     # Initialize the environment and get its state
+    actions = []
     state, info = env.reset()
-    state = torch.tensor(to_features(state), dtype=torch.float32, device=device).unsqueeze(0)
+    state = torch.tensor(to_features(state,env), dtype=torch.float32, device=device).unsqueeze(0)
     rwd = []
     for t in count():
-        action = select_action(state,EPS_START,EPS_END,EPS_DECAY,policy_net,env,device)
+        action = select_action(state,EPS_START,EPS_END,EPS_DECAY,policy_net,env,device,steps_done)
+        actions.append(action)
+        steps_done += 1
         observation, reward, terminated, _ = env.step(action.item())
         reward = torch.tensor([reward], device=device)
         rwd.append(reward)
@@ -104,7 +109,7 @@ for i_episode in tqdm(range(num_episodes)):
         if terminated:
             next_state = None
         else:
-            next_state = torch.tensor(to_features(observation), dtype=torch.float32, device=device).unsqueeze(0)
+            next_state = torch.tensor(to_features(observation,env), dtype=torch.float32, device=device).unsqueeze(0)
 
         # Store the transition in memory
         memory.push(state, action, next_state, reward)
@@ -127,6 +132,7 @@ for i_episode in tqdm(range(num_episodes)):
             break
     
     rewards.append(torch.mean(torch.tensor(rwd)))
+    actions_tot.append(actions)
 
 plt.plot(rewards)
 plt.xlabel('Episode')

@@ -15,10 +15,12 @@ env = HouseEnv(capacity=env_config["capacity"],
                forecast=env_config["forecast"],
                Tmax=Tmax,
                min_price=env_config['min_price'],
-               max_price=env_config["max_price"])
+               max_price=env_config["max_price"],
+               max_prod=env_config['max_prod'],
+               max_conso=env_config['max_conso'])
 
 def random_policy():
-    return random.randint(0,env.action_space.n - 1)
+    return random.sample(env.action_space,1)
 
 rewards = []
 

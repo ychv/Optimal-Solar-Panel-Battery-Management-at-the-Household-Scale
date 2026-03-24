@@ -10,9 +10,10 @@ from typing import Optional
 from src.conso.generate_conso_day import ConsoDay
 from src.conso.generate_prix import PrixDay
 from src.conso.generate_prod import ProdDay
+
 class HouseEnv(gym.Env):
     
-    def __init__(self,capacity=10,forecast=10,Tmax=1000,min_price=0,max_price=100,max_prod=10,max_conso=10):
+    def __init__(self,capacity=10,forecast=10,Tmax=1000,min_price=0.1,max_price=0.2,max_prod=100,max_conso=55):
         self.cap = capacity
         self.forecast = forecast
         self.max_price = max_price
@@ -20,7 +21,7 @@ class HouseEnv(gym.Env):
         self.max_prod = max_prod
         self.max_conso = max_conso
 
-        self.action_space = spaces.Discrete(2)
+        self.action_space = spaces.Discrete(3)
         self.observation_space = spaces.Dict(
             {
                 # "battery_%" : spaces.Box(0, capacity,shape=(1,),dtype=float),
@@ -89,7 +90,7 @@ class HouseEnv(gym.Env):
         # Quantity of electricity to provide at current time
         to_provide = self._conso.vision[0] - self._prod.vision[0]
 
-        if action: # Discharge
+        if action == 2: # Discharge
 
             if to_provide > self._battery: # Need to buy electricity
                 reward = - (to_provide - self._battery) * self._price.vision[0]/self.max_price
@@ -99,7 +100,7 @@ class HouseEnv(gym.Env):
                 self._battery -= max(0,to_provide)
                 reward = max(0,-1*to_provide) * self._price.vision[0]/self.max_price
 
-        else: # Load
+        elif action == 1: # Load
 
             battery_gap = self.cap - self._battery
             
@@ -111,6 +112,12 @@ class HouseEnv(gym.Env):
                 excess = -to_provide - battery_gap
                 self._battery += battery_gap
                 reward = excess * self._price.vision[0]/self.max_price
+
+        else: # Idle
+            if to_provide > 0: # Need to buy
+                reward = -to_provide * self._price.vision[0]/self.max_price
+            else: # Can sell
+                reward = -to_provide * self._price.vision[0]/self.max_price
 
         update_conso(self._conso)
         update_prod(self._prod)
@@ -132,6 +139,10 @@ if __name__ == "__main__":
     print(obs)
     print(reward)
     action= 0
+    obs, reward, done, _ = env.step(action)
+    print(obs)
+    print(reward)
+    action = 2
     obs, reward, done, _ = env.step(action)
     print(obs)
     print(reward)
