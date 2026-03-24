@@ -57,7 +57,9 @@ if torch.cuda.is_available():
 
 BATCH_SIZE = DL_config['BATCH_SIZE']
 GAMMA = DL_config['GAMMA']
-EPS = DL_config['EPS']
+EPS_START = DL_config['EPS_START']
+EPS_END = DL_config['EPS_END']
+EPS_DECAY = DL_config['EPS_DECAY']
 TAU = DL_config['TAU']
 LR = DL_config['LR']
 
@@ -93,7 +95,7 @@ for i_episode in tqdm(range(num_episodes)):
     state = torch.tensor(to_features(state), dtype=torch.float32, device=device).unsqueeze(0)
     rwd = []
     for t in count():
-        action = select_action(state,EPS,policy_net,env,device)
+        action = select_action(state,EPS_START,EPS_END,EPS_DECAY,policy_net,env,device)
         observation, reward, terminated, _ = env.step(action.item())
         reward = torch.tensor([reward], device=device)
         rwd.append(reward)

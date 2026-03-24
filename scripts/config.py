@@ -8,7 +8,7 @@ Configuration file for launching scripts
 
 env_config = {
     'seed' : 42,
-    'num_episodes' : 100,
+    'num_episodes' : 400,
 
     'capacity' : 10,
     'forecast' : 10,
@@ -21,7 +21,9 @@ env_config = {
 DL_config = {
     'BATCH_SIZE' : 128,
     'GAMMA' : 0.99,
-    'EPS' : 0.2,
+    'EPS_START' : 0.9,
+    'EPS_END' : 0.01,
+    'EPS_DECAY' : 2500,
     'TAU' : 0.005,
     'LR' : 3e-4,
 
