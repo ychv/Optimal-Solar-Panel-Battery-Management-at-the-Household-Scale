@@ -15,8 +15,8 @@ from tqdm import tqdm
 import torch
 import torch.optim as optim
 
-from src.env import HouseEnv
-from src.deep_agent import DQN, ReplayMemory, select_action, optimize_model, to_features
+from src.env import HouseEnv, HouseEnvSimple
+from src.deep_agent import DQN, ReplayMemory,  to_features, select_action, optimize_model
 
 env = HouseEnv(capacity=env_config["capacity"],
                forecast=env_config["forecast"],
@@ -25,6 +25,14 @@ env = HouseEnv(capacity=env_config["capacity"],
                max_price=env_config["max_price"],
                max_prod=env_config['max_prod'],
                max_conso=env_config['max_conso'])
+
+# env = HouseEnvSimple(capacity=env_config["capacity"],
+#                forecast=env_config["forecast"],
+#                Tmax=env_config['tmax'],
+#                min_price=env_config['min_price'],
+#                max_price=env_config["max_price"],
+#                max_prod=env_config['max_prod'],
+#                max_conso=env_config['max_conso'])
 
 # if GPU is to be used
 device = torch.device(
@@ -99,7 +107,7 @@ for i_episode in tqdm(range(num_episodes)):
     rwd = []
     for t in count():
         action = select_action(state,EPS_START,EPS_END,EPS_DECAY,policy_net,env,device,steps_done)
-        actions.append(action)
+        actions.append(action.cpu())
         steps_done += 1
         observation, reward, terminated, _ = env.step(action.item())
         reward = torch.tensor([reward], device=device)
@@ -137,5 +145,12 @@ for i_episode in tqdm(range(num_episodes)):
 plt.plot(rewards)
 plt.xlabel('Episode')
 plt.ylabel("Mean reward")
+plt.grid()
+plt.show()
+
+actions_plot = np.array(actions_tot[-3:]).flatten()
+plt.scatter(range(len(actions_plot)),actions_plot)
+plt.title('Actions used on the last 3 episodes')
+plt.ylabel('Action used')
 plt.grid()
 plt.show()

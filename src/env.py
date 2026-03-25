@@ -126,8 +126,74 @@ class HouseEnv(gym.Env):
         if self.time >= self.tmax:
             done = True
 
+        reward = np.clip(reward/10,-1,1)
+
         return self._get_obs(), reward, done, {}
     
+class HouseEnvSimple(HouseEnv):
+
+    def __init__(self, capacity=10, forecast=10, Tmax=1000, min_price=0.1, max_price=0.2, max_prod=100, max_conso=55):
+        super().__init__(capacity, forecast, Tmax, min_price, max_price, max_prod, max_conso)
+
+    def _get_obs(self):
+        obs = {
+            "battery_%" : self._battery,
+            "house_conso" : self._conso.vision,
+            "solar_prod" : self._prod.vision,
+            "price" : self._price,
+            "time" : self.time
+        }
+        return obs
+
+    def reset(self,seed=None):
+        super().reset(seed)
+        self._price = [1]*self.forecast
+
+        return self._get_obs(), {}
+
+    def step(self,action):
+        assert self.action_space.contains(action)
+        done = False
+
+        # Quantity of electricity to provide at current time
+        to_provide = self._conso.vision[0] - self._prod.vision[0]
+
+        if action == 2: # Discharge
+
+            if to_provide > self._battery: # Need to buy electricity
+                reward = - (to_provide - self._battery) * self._price[0]/self.max_price
+                self._battery = 0
+
+            else: # Can sell electricity
+                self._battery -= max(0,to_provide)
+                reward = max(0,-1*to_provide) * self._price[0]/self.max_price
+
+        elif action == 1: # Load
+
+            battery_gap = self.cap - self._battery
+            
+            if to_provide > 0: # Need to buy
+                reward = - (to_provide + battery_gap) * self._price[0]/self.max_price
+                self._battery += battery_gap
+
+            else: # Can charge and sell excess : if excess < 0 then buy the remaining
+                excess = -to_provide - battery_gap
+                self._battery += battery_gap
+                reward = excess * self._price[0]/self.max_price
+
+        else: # Idle
+            if to_provide > 0: # Need to buy
+                reward = -to_provide * self._price[0]/self.max_price
+            else: # Can sell
+                reward = -to_provide * self._price[0]/self.max_price
+
+        update_conso(self._conso)
+        update_prod(self._prod)
+        self.time += 1
+        if self.time >= self.tmax:
+            done = True
+
+        return self._get_obs(), reward, done, {}
 
 
 if __name__ == "__main__":
