@@ -5,15 +5,16 @@ Environnement class definition
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-from src.env_utils import *
 from typing import Optional
 from src.conso.generate_conso_day import ConsoDay
 from src.conso.generate_prix import PrixDay
 from src.conso.generate_prod import ProdDay
+from scripts.config import env_config
 
 class HouseEnv(gym.Env):
     
-    def __init__(self,capacity=10,forecast=10,Tmax=1000,min_price=0.1,max_price=0.2,max_prod=100,max_conso=55):
+    def __init__(self,capacity=env_config['capacity'],forecast=env_config['forecast'],Tmax=env_config['tmax'],min_price=env_config['min_price'],
+                 max_price=env_config['max_price'],max_prod=env_config['max_prod'],max_conso=env_config['max_conso']):
         self.cap = capacity
         self.forecast = forecast
         self.max_price = max_price
@@ -28,7 +29,7 @@ class HouseEnv(gym.Env):
                 # "house_conso" : spaces.Box(0, np.inf,shape=(forecast-1,),dtype=float),
                 # "solar_prod" : spaces.Box(0,np.inf,shape=(forecast-1,),dtype=float)
 
-                "battery_%" : spaces.Discrete(capacity+1),                                # Current battery available charge
+                "battery_%" : spaces.Discrete(capacity+1),                              # Current battery available charge
                 "house_conso" : spaces.MultiDiscrete(max_conso*np.ones((forecast-1,))), # Current and foresable conso
                 "solar_prod" : spaces.MultiDiscrete(max_prod*np.ones((forecast-1,))),   # Current and foresable production
                 "price" : spaces.Box(min_price,max_price,(forecast-1,),dtype=float),    # Current and forseable price
@@ -63,13 +64,12 @@ class HouseEnv(gym.Env):
 
     def reset(self,seed: Optional[int] = None):
         super().reset(seed=seed)
-        self._battery = 0                           # Random ?
-        # self._conso = np.zeros((self.forecast-1,),dtype=int)  # TO CHANGE 
-        self._conso= ConsoDay() #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
+        self._battery = 0  # Random ?
+        self._conso= ConsoDay(mean_day=env_config['mean_day'],sigma=env_config['conso_sigma'],dt=env_config['dt'],pas_t=env_config['time_step_size'],battery_unit=env_config['capacity']) #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
         self._conso.initialisation(self.forecast)
-        self._prod = ProdDay() #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
+        self._prod = ProdDay(states=env_config['prod_states'],ensoleillements=env_config["sunshine"],pas_t=env_config['time_step_size'],battery_unit=env_config["capacity"]) #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
         self._prod.initialisation(self.forecast)
-        self._price = PrixDay() #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
+        self._price = PrixDay(pas_t=env_config['time_step_size']) #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
         self._price.initialisation(self.forecast)
         self.time = 0
         return self._get_obs(), {}
@@ -119,9 +119,9 @@ class HouseEnv(gym.Env):
             else: # Can sell
                 reward = -to_provide * self._price.vision[0]/self.max_price
 
-        update_conso(self._conso)
-        update_prod(self._prod)
-        update_price(self._price)
+        self._conso.update_vision()
+        self._prod.update_vision()
+        self._price.update_vision()
         self.time += 1
         if self.time >= self.tmax:
             done = True
@@ -187,8 +187,8 @@ class HouseEnvSimple(HouseEnv):
             else: # Can sell
                 reward = -to_provide * self._price[0]/self.max_price
 
-        update_conso(self._conso)
-        update_prod(self._prod)
+        self._conso.update_vision()
+        self._prod.update_vision()
         self.time += 1
         if self.time >= self.tmax:
             done = True

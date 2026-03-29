@@ -8,7 +8,7 @@ Configuration file for launching scripts
 
 env_config = {
     'seed' : 42,
-    'num_episodes' : 500,
+    'num_episodes' : 100,
 
     'capacity' : 100,
     'forecast' : 10,
@@ -16,7 +16,15 @@ env_config = {
     'min_price' : 0.1,
     'max_price' : 0.2,
     'max_prod' : 100,
-    'max_conso' : 55
+    'max_conso' : 55,
+
+    'mean_day' : None,
+    'conso_sigma' : 200,
+    'dt' : 0.01,
+    'time_step_size' : 15,
+
+    'prod_states' : [0,1,2],
+    'sunshine' : [0.9,0.5,0.1]
 
 }
 

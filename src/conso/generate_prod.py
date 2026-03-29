@@ -72,7 +72,7 @@ if __name__ == "__main__":
   
     plt.plot(prod_test)
     plt.xlabel("Time (minutes)")
-    plt.ylabel("Production (unité de batterie)")
+    plt.ylabel("Production")
     plt.title("Solar Production over 24 hours")
     plt.grid()
     plt.show()

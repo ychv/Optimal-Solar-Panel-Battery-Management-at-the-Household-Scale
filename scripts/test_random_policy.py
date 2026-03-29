@@ -20,7 +20,7 @@ env = HouseEnv(capacity=env_config["capacity"],
                max_conso=env_config['max_conso'])
 
 def random_policy():
-    return random.sample(env.action_space,1)
+    return env.action_space.sample()
 
 rewards = []
 

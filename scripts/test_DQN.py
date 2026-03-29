@@ -11,6 +11,7 @@ from itertools import count
 import random
 import numpy as np
 from tqdm import tqdm
+import pandas as pd
 
 import torch
 import torch.optim as optim
@@ -18,13 +19,7 @@ import torch.optim as optim
 from src.env import HouseEnv, HouseEnvSimple
 from src.deep_agent import DQN, ReplayMemory,  to_features, select_action, optimize_model
 
-env = HouseEnv(capacity=env_config["capacity"],
-               forecast=env_config["forecast"],
-               Tmax=env_config['tmax'],
-               min_price=env_config['min_price'],
-               max_price=env_config["max_price"],
-               max_prod=env_config['max_prod'],
-               max_conso=env_config['max_conso'])
+env = HouseEnv()
 
 # env = HouseEnvSimple(capacity=env_config["capacity"],
 #                forecast=env_config["forecast"],
@@ -107,7 +102,7 @@ for i_episode in tqdm(range(num_episodes)):
     rwd = []
     for t in count():
         action = select_action(state,EPS_START,EPS_END,EPS_DECAY,policy_net,env,device,steps_done)
-        actions.append(action.cpu())
+        actions.append(action.item())
         steps_done += 1
         observation, reward, terminated, _ = env.step(action.item())
         reward = torch.tensor([reward], device=device)
@@ -139,7 +134,7 @@ for i_episode in tqdm(range(num_episodes)):
         if done:
             break
     
-    rewards.append(torch.mean(torch.tensor(rwd)))
+    rewards.append(torch.mean(torch.tensor(rwd)).item())
     actions_tot.append(actions)
 
 plt.plot(rewards)
@@ -148,9 +143,12 @@ plt.ylabel("Mean reward")
 plt.grid()
 plt.show()
 
-actions_plot = np.array(actions_tot[-3:]).flatten()
+actions_plot = np.array(actions_tot[-1:][:24*4]).flatten()
 plt.scatter(range(len(actions_plot)),actions_plot)
 plt.title('Actions used on the last 3 episodes')
 plt.ylabel('Action used')
 plt.grid()
 plt.show()
+
+pd.DataFrame(rewards,columns=['mean_reward']).to_csv(f'./results/Mean_reward_{env_config['num_episodes']}ep_{env_config['capacity']}cap.csv',sep=',',index=False,header=False)
+pd.DataFrame(np.array(actions_tot).flatten()).to_csv(f'./results/All_actions_{env_config['num_episodes']}ep_{env_config['capacity']}cap_{env_config['time_step_size']}stepsize.csv',sep=',',index=False,header=False)

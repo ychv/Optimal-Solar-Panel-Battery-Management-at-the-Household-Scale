@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     plt.plot(A)
 
-    plt.legend(["Conso simulée","Conso moyenne"])
+    plt.legend(["Simulated consumption","Mean consumption"])
     plt.show()
 
     conso_day3=ConsoDay(sigma=sigma,dt=dt)
