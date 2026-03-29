@@ -8,7 +8,7 @@ Configuration file for launching scripts
 
 env_config = {
     'seed' : 42,
-    'num_episodes' : 100,
+    'num_episodes' : 500,
 
     'capacity' : 100,
     'forecast' : 10,

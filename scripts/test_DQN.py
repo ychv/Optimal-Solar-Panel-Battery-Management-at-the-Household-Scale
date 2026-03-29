@@ -150,5 +150,5 @@ plt.ylabel('Action used')
 plt.grid()
 plt.show()
 
-pd.DataFrame(rewards,columns=['mean_reward']).to_csv(f'./results/Mean_reward_{env_config['num_episodes']}ep_{env_config['capacity']}cap.csv',sep=',',index=False,header=False)
-pd.DataFrame(np.array(actions_tot).flatten()).to_csv(f'./results/All_actions_{env_config['num_episodes']}ep_{env_config['capacity']}cap_{env_config['time_step_size']}stepsize.csv',sep=',',index=False,header=False)
+pd.DataFrame(rewards,columns=['mean_reward']).to_csv(f'./results/DQL_Mean_reward_{env_config['num_episodes']}ep_{env_config['capacity']}cap.csv',sep=',',index=False,header=False)
+pd.DataFrame(np.array(actions_tot).flatten()).to_csv(f'./results/DQL_All_actions_{env_config['num_episodes']}ep_{env_config['capacity']}cap_{env_config['time_step_size']}stepsize.csv',sep=',',index=False,header=False)

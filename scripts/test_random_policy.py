@@ -6,6 +6,7 @@ from scripts.config import env_config
 from src.env import HouseEnv
 from tqdm import tqdm as tqdm
 import random
+import pandas as pd
 import matplotlib.pyplot as plt
 
 num_episodes = env_config['num_episodes'] ; Tmax = env_config['tmax']
@@ -44,3 +45,5 @@ plt.xlabel('Episode')
 plt.ylabel('Mean reward')
 plt.grid()
 plt.show()
+
+pd.DataFrame(rewards,columns=['mean_reward']).to_csv(f'./results/Rd_Mean_reward_{env_config['num_episodes']}ep_{env_config['capacity']}cap.csv',sep=',',index=False,header=False)
