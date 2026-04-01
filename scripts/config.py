@@ -11,7 +11,7 @@ env_config = {
     'num_episodes' : 500,
 
     'capacity' : 100,
-    'forecast' : 10,
+    'forecast' : 100,
     'tmax' : 1000,
     'min_price' : 0.1,
     'max_price' : 0.2,
