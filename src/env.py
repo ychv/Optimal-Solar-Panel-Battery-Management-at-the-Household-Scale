@@ -29,9 +29,9 @@ class HouseEnv(gym.Env):
                 # "house_conso" : spaces.Box(0, np.inf,shape=(forecast-1,),dtype=float),
                 # "solar_prod" : spaces.Box(0,np.inf,shape=(forecast-1,),dtype=float)
 
-                "battery_%" : spaces.Discrete(capacity+1),                              # Current battery available charge
-                "house_conso" : spaces.MultiDiscrete(max_conso*np.ones((forecast-1,))), # Current and foresable conso
-                "solar_prod" : spaces.MultiDiscrete(max_prod*np.ones((forecast-1,))),   # Current and foresable production
+                "battery_%" : spaces.Box(0,capacity,(1,)),                              # Current battery available charge
+                "house_conso" : spaces.Box(0,max_conso,(forecast-1,)),                  # Current and foresable conso
+                "solar_prod" : spaces.Box(0,max_prod,(forecast-1,)),                    # Current and foresable production
                 "price" : spaces.Box(min_price,max_price,(forecast-1,),dtype=float),    # Current and forseable price
                 "time" : spaces.Discrete(Tmax)                                          # Current time step
             }
