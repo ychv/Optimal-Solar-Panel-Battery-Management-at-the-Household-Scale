@@ -25,13 +25,9 @@ class HouseEnv(gym.Env):
         self.action_space = spaces.Discrete(3)
         self.observation_space = spaces.Dict(
             {
-                # "battery_%" : spaces.Box(0, capacity,shape=(1,),dtype=float),
-                # "house_conso" : spaces.Box(0, np.inf,shape=(forecast-1,),dtype=float),
-                # "solar_prod" : spaces.Box(0,np.inf,shape=(forecast-1,),dtype=float)
-
-                "battery_%" : spaces.Box(0,capacity,(1,)),                              # Current battery available charge
-                "house_conso" : spaces.Box(0,max_conso,(forecast-1,)),                  # Current and foresable conso
-                "solar_prod" : spaces.Box(0,max_prod,(forecast-1,)),                    # Current and foresable production
+                "battery_%" : spaces.Box(0,capacity,(1,),dtype=float),                  # Current battery available charge
+                "house_conso" : spaces.Box(0,max_conso,(forecast-1,),dtype=float),      # Current and foresable conso
+                "solar_prod" : spaces.Box(0,max_prod,(forecast-1,),dtype=float),        # Current and foresable production
                 "price" : spaces.Box(min_price,max_price,(forecast-1,),dtype=float),    # Current and forseable price
                 "time" : spaces.Discrete(Tmax)                                          # Current time step
             }
@@ -39,7 +35,6 @@ class HouseEnv(gym.Env):
 
         self.reset()
 
-        # Rajouté par le D (ça servira plus tard tkt le chauve) - 'O' 
         @property  
         def time(self):
             return self._time
@@ -47,7 +42,7 @@ class HouseEnv(gym.Env):
         @time.setter
         def time(self, value):
             self._time = value
-            self._day = value // 96   # 96 pas de 15 min par jour
+            self._day = value // 96   # 96 steps of 15 min per day
         @property
         def day(self):
             return self._day
@@ -64,12 +59,12 @@ class HouseEnv(gym.Env):
 
     def reset(self,seed: Optional[int] = None):
         super().reset(seed=seed)
-        self._battery = 0  # Random ?
-        self._conso= ConsoDay(mean_day=env_config['mean_day'],sigma=env_config['conso_sigma'],dt=env_config['dt'],pas_t=env_config['time_step_size'],battery_unit=env_config['capacity']) #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
+        self._battery = 0
+        self._conso= ConsoDay(mean_day=env_config['mean_day'],sigma=env_config['conso_sigma'],dt=env_config['dt'],pas_t=env_config['time_step_size'],battery_unit=env_config['capacity'])
         self._conso.initialisation(self.forecast)
-        self._prod = ProdDay(states=env_config['prod_states'],ensoleillements=env_config["sunshine"],pas_t=env_config['time_step_size'],battery_unit=env_config["capacity"]) #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
+        self._prod = ProdDay(states=env_config['prod_states'],ensoleillements=env_config["sunshine"],pas_t=env_config['time_step_size'],battery_unit=env_config["capacity"])
         self._prod.initialisation(self.forecast)
-        self._price = PrixDay(pas_t=env_config['time_step_size']) #Changements (normalement ça marche ptet un pb avec time (moi c'est juste en fonction de l'itération car necessaire en fonction de l'heure de la journee ))
+        self._price = PrixDay(pas_t=env_config['time_step_size'])
         self._price.initialisation(self.forecast)
         self.time = 0
         return self._get_obs(), {}
