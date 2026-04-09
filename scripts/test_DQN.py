@@ -152,5 +152,5 @@ plt.grid()
 plt.show()
 plt.savefig(f"./results/figures/Actions_used_{env_config['num_episodes']}eps_{env_config['capacity']}cap_{env_config['forecast']}forecast")
 
-pd.DataFrame(rewards,columns=['mean_reward']).to_csv(f'./results/data/DQL_Mean_reward_{env_config['num_episodes']}ep_{env_config['capacity']}cap_{env_config['forecast']}forecast.csv',sep=',',index=False,header=False)
-pd.DataFrame(np.array(actions_tot).flatten()).to_csv(f'./results/data/DQL_All_actions_{env_config['num_episodes']}ep_{env_config['capacity']}cap_{env_config['forecast']}forecast_{env_config['time_step_size']}stepsize.csv',sep=',',index=False,header=False)
+pd.DataFrame(rewards,columns=['mean_reward']).to_csv(f'./results/data/DQL_Mean_reward_{env_config['num_episodes']}ep_{env_config['capacity']}cap_{env_config['forecast']}forecast_{DL_config['GAMMA']}gamma_decay{DL_config['EPS_DECAY']/env_config['tmax']}ep.csv',sep=',',index=False,header=False)
+pd.DataFrame(np.array(actions_tot).flatten()).to_csv(f'./results/data/DQL_All_actions_{env_config['num_episodes']}ep_{env_config['capacity']}cap_{env_config['forecast']}forecast_{DL_config['GAMMA']}gamma_decay{DL_config['EPS_DECAY']/env_config['tmax']}ep_{env_config['time_step_size']}stepsize.csv',sep=',',index=False,header=False)

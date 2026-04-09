@@ -8,10 +8,10 @@ Configuration file for launching scripts
 
 env_config = {
     'seed' : 42,
-    'num_episodes' : 500,
+    'num_episodes' : 100,
 
     'capacity' : 100,
-    'forecast' : 100,
+    'forecast' : 10,
     'tmax' : 1000,
     'min_price' : 0.1,
     'max_price' : 0.2,
@@ -33,7 +33,7 @@ DL_config = {
     'GAMMA' : 0.99,
     'EPS_START' : 0.9,
     'EPS_END' : 0.01,
-    'EPS_DECAY' : 30000,
+    'EPS_DECAY' : 30*env_config['tmax'],
     'TAU' : 0.005,
     'LR' : 3e-4,
 
