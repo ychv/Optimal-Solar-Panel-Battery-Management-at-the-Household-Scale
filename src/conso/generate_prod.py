@@ -1,3 +1,6 @@
+"""
+Class definition for solar production model
+"""
 
 import numpy as np
 import pandas as pd
@@ -14,9 +17,6 @@ class ProdDay:
         self.pas_t=pas_t
         self.day=0
         self.time=0
-
-        
-
     
     def markov_simple_init(self):
         self.prod_mu=[420 * np.exp(-0.5 * ((t - 12*60) / 120) ** 2) * ((t >= 5.75*60) & (t <= 18.25*60)) for t in np.arange(0, 60*24)]
@@ -31,6 +31,7 @@ class ProdDay:
         self.day += 1
         if show:
             print(f"Day {self.day}: State {self.state}, Ensoleillement {self.ensoleillements[self.state]}")
+
     def iteration_batterie(self):
         if self.time==0:
             self.markov_simple_init()
@@ -38,9 +39,10 @@ class ProdDay:
             
             self.time=0
             self.markov_simple_update()
-        result = int(self.prod_mu[self.time]*self.ensoleillements[self.state]/self.battery_unit *self.pas_t/60) #attendtion on veut des equivalent Wh
+        result = int(self.prod_mu[self.time]*self.ensoleillements[self.state]/self.battery_unit *self.pas_t/60) # Wh equivalents
         self.time+=self.pas_t
         return result
+    
     def initialisation(self,forecast):
         self.vision=[0]*(forecast)
         for i in range(forecast):
@@ -49,7 +51,6 @@ class ProdDay:
     
 
     def update_vision(self):
-        "On supprime le premier terme et on ajoute le nouveau en queue de self.vision avec self.pop()"
         self.vision.pop(0)
         self.vision.append(self.iteration_batterie())
         return self.vision

@@ -1,3 +1,7 @@
+"""
+Class definition for price model
+"""
+
 import numpy as np
 import pandas as pd
 import os
@@ -35,7 +39,6 @@ class PrixDay:
         return self.vision
 
     def update_vision(self):
-        "On supprime le premier terme et on ajoute le nouveau en queue de self.vision avec self.pop()"
         self.vision.pop(0)
         self.vision.append(self.tarif_hp_hc())
         return self.vision

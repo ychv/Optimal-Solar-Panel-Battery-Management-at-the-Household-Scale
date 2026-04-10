@@ -1,4 +1,4 @@
-# Optimal Battery Management at the Houshold Scale
+# Optimal Solar Panel Battery Management at the Houshold Scale
 
 As solar panels and home batteries become more widely available, the question of how to best manage energy storage is becoming increasingly important. A household equipped with these systems must constantly decide: should it charge the battery or feed its excess production back into the grid? The challenge stems from uncertainty regarding consumption, solar production, and electricity prices. We propose a realistic simulation environment using stochastic differential equations coupled with a deep reinforcement learning algorithm to automatically learn an optimal management strategy.
 

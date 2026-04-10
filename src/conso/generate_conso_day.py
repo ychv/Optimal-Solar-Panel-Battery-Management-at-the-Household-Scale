@@ -1,3 +1,6 @@
+"""
+Class definition for electric consumption model
+"""
 
 import numpy as np
 import pandas as pd
@@ -28,6 +31,7 @@ class ConsoDay:
     
     def drift_simple(self,i):
         return 3*(self.mean_day[i%len(self.mean_day)] - self.conso[i])
+    
     def drift(self,i):
         mu_prime = (self.mean_day[i+1]-self.mean_day[i]) / self.dt
         return mu_prime - 3*(self.conso[i]-self.mean_day[i])
@@ -46,7 +50,7 @@ class ConsoDay:
             self.update_conso()
            
 
-        return int(self.conso[self.iteration-1]/self.battery_unit*self.pas_t/60) #attendtion on veut des equivalent Wh
+        return int(self.conso[self.iteration-1]/self.battery_unit*self.pas_t/60) # Wh equivalents
     
     def initialisation(self,forecast):
         self.vision=[0]*(forecast)
@@ -65,7 +69,7 @@ class ConsoDay:
 if __name__ == "__main__":
     for j in range(10):
         # mean_day = data["puissance_W"].values
-        # mean_day=np.concatenate((mean_day,mean_day))  # dupliquer pour faire 48h
+        # mean_day=np.concatenate((mean_day,mean_day))  # duplicate to make 48h
         # mean_day=np.concatenate((mean_day,mean_day))
         sigma = 200
         dt =1./60  # 1 minute

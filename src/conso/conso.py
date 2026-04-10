@@ -1,4 +1,9 @@
 """
+
+File to download consumption dataset, and get mean to use
+in the stochastic model. As this is not very intellectually
+interesting, we used an LLM to generate this.
+
 Estimation empirique de μ(t) depuis les données UCI
 =====================================================
 Télécharge automatiquement le dataset UCI :
